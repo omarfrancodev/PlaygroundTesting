@@ -1,5 +1,17 @@
 @IsTest
 private class DataGenerationTests {
+  @TestSetup
+  static void dataCreation() {
+    // GIVEN
+    Account a = TestFactory.getAccount('Muddy Waters Inc.', true);
+    Contact c = TestFactory.getContact(a.id, 'Muddy', 'Waters', true);
+    Opportunity opp = new Opportunity();
+    opp.name = 'Long lost record';
+    opp.accountId = a.id;
+    opp.closeDate = Date.today().addDays(14);
+    opp.stageName = 'prospecting';
+    insert opp;
+  }
   @IsTest
   static void testBruteForceAccountCreation() {
     // GIVEN
@@ -28,7 +40,17 @@ private class DataGenerationTests {
     contacts = [SELECT Id FROM Contact];
     Test.stopTest();
     // THEN
-    Assert.isTrue(accts.size() > 0, 'Was expecting to find at least one account');
+    Assert.isTrue(
+      accts.size() > 0,
+      'Was expecting to find at least one account'
+    );
     Assert.areEqual(6, contacts.size(), 'Was expecting to find 5 contacts');
+  }
+  @IsTest
+  static void testAtTestSetupMethodsRule() {
+    // WHEN
+    List<Opportunity> opps = [SELECT Id, AccountId FROM Opportunity];
+    // THEN
+    Assert.areEqual(1, opps.size(), 'Expected test to find a single Opp');
   }
 }
